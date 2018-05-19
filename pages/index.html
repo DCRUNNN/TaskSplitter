@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>星云任务</title>
+
+    <link rel="stylesheet" href="../resources/bootstrap/css/bootstrap.css">
+    <link rel="stylesheet" href="../resources/font-awesome/css/font-awesome.css">
+
+</head>
+
+<body>
+
+<nav class="navbar navbar-inverse" role="navigation">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="index.html">星云任务</a>
+        </div>
+        <div>
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="index.html">任务广场</a></li>
+                <li><a href="myTask.html">我的任务</a></li>
+            </ul>
+            <div class="pull-right" style="color: white"><i class="fa fa-user-circle">个人中心</i></div>
+        </div>
+
+    </div>
+</nav>
+
+<div>
+
+    <ol class="breadcrumb">
+        <li><a href="#">星云任务</a></li>
+        <li class="active"><a href="#">任务广场</a></li>
+    </ol>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h5>最新任务</h5>
+        </div>
+        <div class="panel-body">
+            <div>
+                <div class="row" id="latestTaskRow">
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel panel-default">
+
+        <div class="panel-heading">
+            <h5>任务列表</h5>
+        </div>
+        <div class="panel-body">
+            <ul class="list-unstyled" id="allTaskUL">
+
+
+            </ul>
+
+        </div>
+
+    </div>
+
+    <footer style="text-align: center">
+        <p>&copy; 星云任务 All rights reserved 2018</p>
+        <p>联系我们：Wechat：this_songjian</p>
+    </footer>
+
+</div>
+
+
+</body>
+
+
+<script src="../dist/js/jquery-3.3.1.min.js"></script>
+<script src="../resources/bootstrap/js/bootstrap.js"></script>
+
+<script src="../dist/js/nebPay.js"></script>
+<script src="../dist/js/nebulas.js"></script>
+
+<script src="../dist/js/pages/index.js"></script>
+
+<script>
+
+    window.addEventListener("load", function () {
+        var NebPay = require("nebpay");
+        var nebPay = new NebPay();
+        var contract_address = "n1QVFUAEEE8Nz3TsCe2TtcW53ZVrR5Qb9af";
+
+        var isExtensionExist = typeof (webExtensionWallet) !== "undefined";
+        if (!isExtensionExist) {
+            $("#pageBody").empty();
+            $("#pageBody").append('<div class="no-extension">Please install <a href="https://github.com/ChengOrangeJu/WebExtensionWallet">WebExtensionWallet</a> to use Nebulas Notes</div>');
+        }else{
+            var api = new TaskContractAPI();
+            api.get(50, 0, resp => {
+                if (resp.result) {
+                    var tasks = JSON.parse(resp.result);
+                    if (tasks.length > 0) {
+                        tasks.sort((a, b) => a.taskID > b.taskID ? -1 : 1);
+                        for(var i=0;i<4;i++){
+                            showLastestTask(tasks[i])
+                        }
+                        for (const task of tasks) {
+                            showAllTask(task);
+                        }
+                    }
+                }
+            });
+        }
+
+    });
+
+</script>
+
+</html>
