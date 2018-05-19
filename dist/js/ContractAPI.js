@@ -8,7 +8,7 @@ class SmartContractAPI {
     }
 
     getContractAddress() {
-        return this._contractAddress;
+        return this.contractAddress;
     }
 
     _simulateCall({ value = "0", callArgs = "[]", callFunction , callback }) {
@@ -32,47 +32,45 @@ class SmartContractAPI {
     }
 }
 
-class TaskContractAPI extends SmartContractAPI{
-    addTask(taskName,taskInfo,deadline,totalMoney,numOfPeople,cb) {
+class TaskContractAPI extends SmartContractAPI {
+    addTask(taskName, taskInfo, deadline, totalMoney, numOfPeople, cb) {
         this._call({
-            callArgs : `[${taskName}, "${taskInfo}", "${deadline}",${totalMoney}, "${numOfPeople}"]`,
-            callFunction : "addTask",
+            callArgs: `[${taskName}, "${taskInfo}", "${deadline}",${totalMoney}, "${numOfPeople}"]`,
+            callFunction: "addTask",
             callback: cb
         });
     }
 
     getTaskByID(taskID, cb) {
         this._simulateCall({
-            callArgs : `[${taskID}]`,
-            callFunction : "getTaskByID",
+            callArgs: `[${taskID}]`,
+            callFunction: "getTaskByID",
             callback: cb
         });
     }
 
-    getTaskByUser(wallet, cb) {
+    getTaskByUser( cb) {
         this._simulateCall({
-            callArgs : `[${wallet}]`,
-            callFunction : "getTaskByUser",
+            callArgs: '',
+            callFunction: "getTaskByUser",
             callback: cb
         });
     }
 
-    getUserParticipantTask(wallet,cb){
+    getUserParticipantTask(cb) {
         this._simulateCall({
-            callArgs : `[${wallet}]`,
-            callFunction : "getUserParticipantTask",
+            callArgs: '',
+            callFunction: "getUserParticipantTask",
             callback: cb
         });
     }
 
     get(limit, offset, cb) {
         this._simulateCall({
-            callArgs : `[${limit}, ${offset}]`,
-            callFunction : "get",
+            callArgs: `[${limit}, ${offset}]`,
+            callFunction: "get",
             callback: cb
         });
     }
-
-
 
 }

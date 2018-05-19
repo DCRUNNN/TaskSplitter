@@ -1,8 +1,8 @@
 "use strict";
 
-var TaskPO = function(text) {
-    if (text) {
-        var obj = JSON.parse(text);
+class TaskPO {
+    constructor(text) {
+        let obj = text ? JSON.parse(text) : {};
         this.taskID = obj.taskID || 0;
         this.taskName = obj.taskName;
         this.announcer = obj.announcer;
@@ -13,46 +13,37 @@ var TaskPO = function(text) {
         this.numOfPeople = obj.numOfPeople;
         this.numOfParticipant = obj.numOfParticipant;
         this.state = obj.state;
-    } else {
-        this.taskID = 0;
-        this.taskName = "";
-        this.announcer = "";
-        this.participant = "";
-        this.taskInfo = "";
-        this.deadline = "";
-        this.totalMoney = 0;
-        this.numOfPeople = 0;
-        this.numOfParticipant = 0;
-        this.state = "";
     }
-};
 
-TaskPO.prototype = {
-    toString: function () {
+    toString() {
         return JSON.stringify(this);
     }
-};
+}
 
-var Task = function () {
-    LocalContractStorage.defineProperty(this, "count");
-    LocalContractStorage.defineProperty(this, "userMap"); //存储用户账户，任务ID
-    LocalContractStorage.defineProperty(this, "participantMap"); //存储用户账户，用户参与的任务ID
-    LocalContractStorage.defineMapProperty(this, "tasks", { //存储任务ID，任务
-        parse: function (text) {
-            return new TaskPO(text);
-        },
-        stringify: function (o) {
-            return o.toString();
-        }
-    });
-};
+class TaskContract {
+    constructor() {
+        LocalContractStorage.defineProperty(this, "count");
+        LocalContractStorage.defineMapProperty(this, "userMap"); //存储用户账户，任务ID
+        LocalContractStorage.defineMapProperty(this, "participantMap"); //存储用户账户，用户参与的任务ID
+        LocalContractStorage.defineMapProperty(this, "tasks", { //存储任务ID，任务
+            parse: function (text) {
+                return new TaskPO(text);
+            },
+            stringify: function (o) {
+                return o.toString();
+            }
+        });
+    }
 
-Task.prototype = {
-    init: function () {
+    init() {
         this.count = new BigNumber(1);
-    },
+    }
 
-    addTask: function (taskName,taskInfo,deadline,totalMoney,numOfPeople) {
+    total() {
+        return new BigNumber(this.count).minus(1).toNumber();
+    }
+
+    addTask (taskName,taskInfo,deadline,totalMoney,numOfPeople) {
         var index = this.count;
 
         var announcer = Blockchain.transaction.from;
@@ -81,9 +72,9 @@ Task.prototype = {
         this.userMap.put(announcer,currentTaskID);
         this.count = new BigNumber(index).plus(1);
 
-    },
+    }
 
-    joinTask:function(wallet,taskID){
+    joinTask(wallet,taskID){
         taskID = taskID.trim();
         if ( taskID === "" ) {
             throw new Error("taskID为空！");
@@ -104,18 +95,18 @@ Task.prototype = {
             this.participantMap.put(wallet,task.participant);
             alert("参与成功！");
         }
-    },
+    }
 
-    getTaskByID: function (taskID) {
+    getTaskByID (taskID) {
         taskID = taskID.trim();
         if ( taskID === "" ) {
             throw new Error("taskID为空！");
         }
         return this.tasks.get(key);
-    },
+    }
 
-    getTaskByUser: function (wallet) {
-        wallet = wallet || Blockchain.transaction.from;
+    getTaskByUser () {
+        var wallet = Blockchain.transaction.from;
         var taskIDs = this.userMap.get(wallet);
         if(!taskIDs){
             throw new Error("Wallet = ${wallet} 尚未发布任务！");
@@ -128,10 +119,10 @@ Task.prototype = {
             }
         }
         return result
-    },
-    
-    getUserParticipantTask:function (wallet) {
-        wallet = wallet || Blockchain.transaction.from;
+    }
+
+    getUserParticipantTask () {
+        var wallet = Blockchain.transaction.from;
         var tasksID = this.participantMap.get(wallet);
         var result = [];
         for(const id of tasksID){
@@ -141,7 +132,7 @@ Task.prototype = {
             }
         }
         return result;
-    },
+    }
 
     get(limit, offset) {
         var result = [];
@@ -157,7 +148,6 @@ Task.prototype = {
         }
         return result;
     }
+}
 
-
-};
-module.exports = Task;
+module.exports = TaskContract;
