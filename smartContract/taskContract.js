@@ -83,7 +83,10 @@ class TaskContract {
         // }
 
         var wallet = Blockchain.transaction.from;
-        var task = this.getTaskByID(parseInt(taskID));
+        let task = this.tasks.get(taskID);
+        if(!task) {
+            throw new Error("task not found");
+        }
         if(task.state!="进行中"){
             return("任务不在进行中！");
         }
@@ -91,17 +94,14 @@ class TaskContract {
             return("任务参与人数已满!");
         }else{
             task.numOfParticipant = new BigNumber(task.numOfParticipant).plus(1);
-
             task.participant = task.participant + wallet + ",";
-
-            this.tasks.put(taskID,task)
+            this.tasks.put(taskID,task);
             this.participantMap.put(wallet,task.participant);
             return("参与成功！");
         }
     }
 
     getTaskByID (taskID) {
-
         return this.tasks.get(taskID);
     }
 
@@ -116,12 +116,10 @@ class TaskContract {
                 userTasks.push(task);
             }
         }
-
         if(userTasks==[]){
             console.log("您尚未发布任务！");
         }
         return userTasks;
-
 
         // var result  = [];
         // for (const id of taskIDs) {
@@ -153,7 +151,6 @@ class TaskContract {
                 userTasks.push(task);
             }
         }
-
         if(userTasks==[]){
             console.log("您尚未参与任务！");
         }
@@ -174,6 +171,29 @@ class TaskContract {
             }
         }
         return result;
+    }
+
+    delete(taskID){
+        var task = this.tasks.get(taskID);
+        if(!task) {
+            throw new Error("task not found");
+        }
+        this.tasks.del(taskID);
+        return "删除成功!"
+    }
+
+    reject(taskID){
+        var task = this.tasks.get(taskID);
+        task.state= "已回绝";
+        this.tasks.put(taskID,task);
+        return "拒绝成功！"
+    }
+
+    accept(taskID){
+        var task = this.tasks.get(taskID);
+        task.state= "已完成";
+        this.tasks.put(taskID,task);
+        return "接受成功！"
     }
 }
 

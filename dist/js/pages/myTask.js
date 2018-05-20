@@ -10,8 +10,9 @@ function showMyDeliveryTask(task) {
                                 <td>
                                     <div class="btn-toolbar" role="toolbar">
                                         <div class="btn-group">
-                                            <button type="button" class="btn btn-success">确认</button>
-                                            <button type="button" class="btn btn-danger">拒绝</button>
+                                            <button type="button" class="btn btn-success" onclick="acceptTask(${task.taskID})">确认</button>
+                                            <button type="button" class="btn btn-warning" onclick="rejectTask(${task.taskID})">拒绝</button>
+                                            <button type="button" class="btn btn-danger" onclick="deleteTask(${task.taskID})">删除</button>
                                         </div>
                                     </div>
                                 </td>

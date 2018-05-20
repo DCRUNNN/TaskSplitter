@@ -1,4 +1,4 @@
-const CONTRACT_ADDRESS = "n1sKQrm1qTfLT994wrUCSrdg1LFPuEqmaRE";
+const CONTRACT_ADDRESS = "n1zTGkmguHqmJtSG4ps5f52P4fx3uaFwrkN";
 
 class SmartContractAPI {
     constructor(contractAddress) {
@@ -77,6 +77,30 @@ class TaskContractAPI extends SmartContractAPI {
         this._simulateCall({
             callArgs: `[${taskID}]`,
             callFunction: "joinTask",
+            callback: cb
+        });
+    }
+
+    deleteTask(taskID,cb){
+        this._simulateCall({
+            callArgs: `[${taskID}]`,
+            callFunction: "delete",
+            callback: cb
+        });
+    }
+
+    acceptTask(taskID,cb){
+        this._simulateCall({
+            callArgs: `[${taskID}]`,
+            callFunction: "accept",
+            callback: cb
+        });
+    }
+
+    rejectTask(taskID,cb){
+        this._simulateCall({
+            callArgs: `[${taskID}]`,
+            callFunction: "reject",
             callback: cb
         });
     }

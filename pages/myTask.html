@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>星云任务</title>
+    <title>星云任务链</title>
 
     <link rel="stylesheet" href="../resources/bootstrap/css/bootstrap.css">
     <link rel="stylesheet" href="../resources/font-awesome/css/font-awesome.css">
@@ -50,7 +50,7 @@
 <nav class="navbar navbar-inverse" role="navigation">
     <div class="container-fluid">
         <div class="navbar-header">
-            <a class="navbar-brand" href="index.html">星云任务</a>
+            <a class="navbar-brand" href="index.html">星云任务链</a>
         </div>
         <div>
             <ul class="nav navbar-nav">
@@ -65,7 +65,7 @@
 <div id="pageBody">
 
     <ol class="breadcrumb">
-        <li><a href="index.html">星云任务</a></li>
+        <li><a href="index.html">星云任务链</a></li>
         <li class="active"><a href="myTask.html">我的任务</a></li>
     </ol>
     <div class="panel panel-default">
@@ -210,6 +210,42 @@
 
 <script src="../dist/js/ContractAPI.js"></script>
 
+<script>
+
+    function deleteTask(taskID){
+        let api = new TaskContractAPI();
+        api.deleteTask(taskID,resp => {
+            console.warn(resp)
+            if (resp.result) {
+                alert(resp.result);
+                location.reload();
+            }
+        });
+    }
+
+    function acceptTask(taskID){
+        let api = new TaskContractAPI();
+        api.acceptTask(taskID,resp => {
+            console.warn(resp)
+            if (resp.result) {
+                alert(resp.result);
+                location.reload();
+            }
+        });
+    }
+
+    function rejectTask(taskID){
+        let api = new TaskContractAPI();
+        api.rejectTask(taskID,resp => {
+            console.warn(resp)
+            if (resp.result) {
+                alert(resp.result);
+                location.reload();
+            }
+        });
+    }
+
+</script>
 
 
 <script>
@@ -217,7 +253,7 @@
     "use strict";
 
     // 合约地址
-    var dappAddress = "n1sKQrm1qTfLT994wrUCSrdg1LFPuEqmaRE";
+    var dappAddress = "n1zTGkmguHqmJtSG4ps5f52P4fx3uaFwrkN";
 
     // 直接访问星云链的api
     var nebulas = require("nebulas"),
@@ -233,7 +269,6 @@
 
     // 执行合约返回的交易流水号，用于查询交易信息
     var serialNumber;
-
 
     $("#addTaskBT").click(function () {
         var taskName = $('#taskName').val();
