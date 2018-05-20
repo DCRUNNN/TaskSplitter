@@ -45,12 +45,14 @@ class TaskContract {
 
     addTask (taskName,taskInfo,deadline,totalMoney,numOfPeople) {
         var index = this.count;
-
         var announcer = Blockchain.transaction.from;
         // var dictItem = this.repo.get(key);
         // if (dictItem){
         //     throw new Error("value has been occupied");
         // }
+
+        console.warn(announcer);
+        console.warn(index);
 
         var task = new TaskPO();
 
@@ -61,77 +63,102 @@ class TaskContract {
         task.taskInfo = taskInfo;
         task.deadline = deadline;
         task.totalMoney = totalMoney;
-        task.numOfPeople = numOfPeople;
+        task.numOfPeople = new BigNumber(numOfPeople);
         task.state = "进行中";
+        task.numOfParticipant = new BigNumber(0);
 
-        this.tasks.put(taskID, task);
+        this.tasks.put(index, task);
 
-        var currentTaskID = this.userMap.getTaskByUser(announcer)||[];
+        var currentTaskID = this.userMap.get(announcer)||[];
         currentTaskID.push(index);
 
         this.userMap.put(announcer,currentTaskID);
         this.count = new BigNumber(index).plus(1);
-
     }
 
-    joinTask(wallet,taskID){
-        taskID = taskID.trim();
-        if ( taskID === "" ) {
-            throw new Error("taskID为空！");
-        }
-        var task = this.getTaskByID(taskID);
+    joinTask(taskID){
+        // taskID = taskID.trim();
+        // if ( taskID === "" ) {
+        //     throw new Error("taskID为空！");
+        // }
+
+        var wallet = Blockchain.transaction.from;
+        var task = this.getTaskByID(parseInt(taskID));
         if(task.state!="进行中"){
-            alert("任务不在进行中！");
-            return;
+            return("任务不在进行中！");
         }
         if(task.numOfPeople == task.numOfParticipant){
-            alert("任务参与人数已满!");
-            return;
+            return("任务参与人数已满!");
         }else{
-            task.numOfParticipant = task.numOfParticipant + 1;
+            task.numOfParticipant = new BigNumber(task.numOfParticipant).plus(1);
 
-            task.participant = task.participant + wallet+",";
+            task.participant = task.participant + wallet + ",";
 
+            this.tasks.put(taskID,task)
             this.participantMap.put(wallet,task.participant);
-            alert("参与成功！");
+            return("参与成功！");
         }
     }
 
     getTaskByID (taskID) {
-        taskID = taskID.trim();
-        if ( taskID === "" ) {
-            throw new Error("taskID为空！");
-        }
-        return this.tasks.get(key);
+
+        return this.tasks.get(taskID);
     }
 
     getTaskByUser () {
         var wallet = Blockchain.transaction.from;
-        var taskIDs = this.userMap.get(wallet);
-        if(!taskIDs){
-            throw new Error("Wallet = ${wallet} 尚未发布任务！");
-        }
-        var result  = [];
-        for (const id of taskIDs) {
-            var task = this.tasks.get(id);
-            if(task) {
-                result.push(task);
+        // var taskIDs = this.userMap.get(wallet);
+
+        var allTasks=this.get(60,0);
+        var userTasks=[];
+        for(const task of allTasks){
+            if(task.announcer == wallet){
+                userTasks.push(task);
             }
         }
-        return result
+
+        if(userTasks==[]){
+            console.log("您尚未发布任务！");
+        }
+        return userTasks;
+
+
+        // var result  = [];
+        // for (const id of taskIDs) {
+        //     var task = this.tasks.get(id);
+        //     if(task) {
+        //         result.push(task);
+        //     }
+        // }
+        // return result
     }
 
     getUserParticipantTask () {
         var wallet = Blockchain.transaction.from;
-        var tasksID = this.participantMap.get(wallet);
-        var result = [];
-        for(const id of tasksID){
-            var task = this.tasks.get(id);
-            if(task){
-                result.push(task);
+
+        // var tasksID = this.participantMap.get(wallet);
+        // var result = [];
+        // for(const id of tasksID){
+        //     var task = this.tasks.get(id);
+        //     if(task){
+        //         result.push(task);
+        //     }
+        // }
+        // return result;
+
+        var allTasks=this.get(60,0);
+        var userTasks=[];
+        for(const task of allTasks){
+            if(task.participant.indexOf(wallet)!= -1){
+                userTasks.push(task);
             }
         }
-        return result;
+
+        if(userTasks==[]){
+            console.log("您尚未参与任务！");
+        }
+        return userTasks;
+
     }
 
     get(limit, offset) {

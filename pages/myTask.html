@@ -75,6 +75,7 @@
         <div class="panel-body">
             <div>
                 <button class="btn btn-primary pull-right" data-toggle="modal" data-target="#newTaskModal">新建任务</button>
+                <button class="btn btn-primary pull-right" id="searchMyTaskBT">查看我的任务</button>
                 <table class="table table-striped">
                     <caption style="text-align: center;font-weight: bold;font-size: 16px">我发出的任务</caption>
                     <thead>
@@ -104,6 +105,8 @@
         </div>
         <div class="panel-body">
             <div>
+                <button class="btn btn-primary pull-right" id="searchMyParticpantTaskBT">查看我参与的任务</button>
+
                 <table class="table table-striped">
                     <caption style="text-align: center;font-weight: bold;font-size: 16px">我参与的任务</caption>
                     <thead>
@@ -211,6 +214,112 @@
 
 <script>
 
+    "use strict";
+
+    // 合约地址
+    var dappAddress = "n1sKQrm1qTfLT994wrUCSrdg1LFPuEqmaRE";
+
+    // 直接访问星云链的api
+    var nebulas = require("nebulas"),
+        Account = nebulas.Account,
+        neb = new nebulas.Neb();
+    // 设置使用的网络
+    neb.setRequest(new nebulas.HttpRequest("https://testnet.nebulas.io"));
+
+    // NebPay SDK 为不同平台的交易提供了统一的支付接口
+    // 开发者在Dapp页面中使用NebPay API可以通过浏览器插件钱包、手机app钱包等实现交易支付和合约调用。
+    var NebPay = require("nebpay");
+    var nebPay = new NebPay();
+
+    // 执行合约返回的交易流水号，用于查询交易信息
+    var serialNumber;
+
+
+    $("#addTaskBT").click(function () {
+        var taskName = $('#taskName').val();
+        var taskInfo = $('#taskInfo').val();
+        var taskMoney = $('#taskMoney').val();
+        var numOfPeople = $('#numOfPeople').val();
+        var deadline = $('#deadline').val();
+
+        if (taskName === "" || taskInfo === "") {
+            alert("标题或内容不能为空！");
+            return;
+        }
+        //要检查一下余额是否足够
+//        api.addTask(taskName,taskInfo,deadline,taskMoney,numOfPeople);
+
+        // 执行合约中的save方法
+        serialNumber = nebPay.call(dappAddress, "0", "addTask", "[\"" + taskName + "\",\"" + taskInfo + "\",\"" + deadline + "\",\""+taskMoney+"\",\""+numOfPeople+"\"]", {
+            listener : function (resp) {
+                console.log(resp);
+                // 清空信息
+                $("#taskName").val("");
+                $("#taskInfo").val("");
+                $("#taskMoney").val("");
+                $("#numOfPeople").val("");
+                $('#deadline').val("");
+                $('#newTaskModal').modal('hide');
+
+                // 延迟5秒执行
+                intervalQuery = setInterval(function () {
+                    queryResultInfo();
+                }, 5000);
+            }
+        });
+    });
+    // 定时器
+    var intervalQuery;
+    // 根据交易流水号查询执行结果数据
+    function queryResultInfo() {
+        nebPay.queryPayInfo(serialNumber)
+            .then(function (resp) {
+                console.warn(resp);
+                var respObject = JSON.parse(resp)
+                console.warn(respObject);
+                if(respObject.code === 0){
+                    alert(`发布任务成功!`);
+                    clearInterval(intervalQuery);
+                }
+            })
+            .catch(function (err) {
+                console.log(err);
+            })
+    }
+
+    // 查看信息
+    $("#searchMyTaskBT").click(function () {
+        let api = new TaskContractAPI();
+        api.getTaskByUser(resp => {
+            if (resp.result) {
+                var tasks = JSON.parse(resp.result);
+                if (tasks.length > 0) {
+                    for(const task of tasks){
+                        showMyDeliveryTask(task);
+                    }
+                }
+            }
+        });
+
+    });
+
+    $("#searchMyParticpantTaskBT").click(function () {
+        let api = new TaskContractAPI();
+        api.getUserParticipantTask(resp => {
+            if (resp.result) {
+                var tasks = JSON.parse(resp.result);
+                if (tasks.length > 0) {
+                    for(const task of tasks){
+                        showMyParticipantTask(task);
+                    }
+                }
+            }
+        });
+
+    });
+
+
+
     window.addEventListener("load", function () {
 
         var isExtensionExist = typeof (webExtensionWallet) !== "undefined";
@@ -218,10 +327,8 @@
             $("#pageBody").empty();
             $("#pageBody").append('<div class="no-extension">Please install <a href="https://github.com/ChengOrangeJu/WebExtensionWallet">WebExtensionWallet</a> to use Nebulas Notes</div>');
         }else{
-            var api = new TaskContractAPI();
-            api.getTaskByUser( resp => {
-                console.log(resp);
-                console.log("===============");
+            let api = new TaskContractAPI();
+            api.getTaskByUser(resp => {
                 if (resp.result) {
                     var tasks = JSON.parse(resp.result);
                     if (tasks.length > 0) {
@@ -243,16 +350,6 @@
                 }
             });
 
-            $("#addTaskBT").click(function(){
-                var taskName = $('#taskName').val();
-                var taskInfo = $('#taskInfo').val();
-                var taskMoney = $('#taskMoney').val();
-                var numOfPeople = $('#numOfPeople').val();
-                var deadline = $('#deadline').val();
-
-                //要检查一下余额是否足够
-                api.addTask(taskName,taskInfo,deadline,taskMoney,numOfPeople);
-            });
         }
 
     });
