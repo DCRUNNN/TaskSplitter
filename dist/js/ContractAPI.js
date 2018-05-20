@@ -1,4 +1,4 @@
-const CONTRACT_ADDRESS = "n1zTGkmguHqmJtSG4ps5f52P4fx3uaFwrkN";
+const CONTRACT_ADDRESS = "n1zwsfBPWfNPLJwT57DfeprpWrsz3oLxY9n";
 
 class SmartContractAPI {
     constructor(contractAddress) {
